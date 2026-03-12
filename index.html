@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLANES OPERATIVOS ANUALES (POAs)</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-omnivore@0.3.4/leaflet-omnivore.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #e9eef2; color: #333; display: flex; flex-direction: column; align-items: center; }
+
+        /* LOGIN */
+        #loginOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(44,62,80,0.85); display:flex; justify-content:center; align-items:center; z-index:10000; }
+        #loginLogo { max-width: 550px; height: auto; margin-bottom: 20px; }
+        #loginFormContainer { background-color:#f8f9fa; padding:30px 40px; border-radius:8px; box-shadow:0 8px 25px rgba(0,0,0,0.2); width:100%; max-width:400px; text-align:center; }
+        #loginFormContainer h2 { margin-top:0; margin-bottom:20px; color:#2c3e50; font-size:1.5em; }
+        #loginFormContainer .input-group { margin-bottom:15px; text-align:left; }
+        #loginFormContainer label { display:block; margin-bottom:5px; font-weight:bold; color:#495057; }
+        #loginFormContainer input[type="text"], #loginFormContainer input[type="password"] { width:100%; padding:12px; border:1px solid #ced4da; border-radius:5px; box-sizing:border-box; font-size:1em; }
+        #loginButton { width:100%; padding:12px; background-color:#007bff; color:white; border:none; border-radius:5px; font-size:1.1em; cursor:pointer; margin-top:10px; }
+        #loginButton:hover { background-color:#0056b3; }
+        #loginError { color:#d9534f; margin-top:15px; font-weight:bold; display:none; }
+
+        /* PRINT HEADER/FOOTER */
+        #pdfPrintImageHeader, h1#pdfPrintMainTitle, span#printDateGlobal, div#pdfPrintPageFooterStrings { display:none; }
+
+        #mainAppContent { display:none; flex-direction:column; align-items:center; width:100%; }
+        #mainAppContent > img { align-self:flex-start; }
+        #mainContainer { max-width:1200px; width:100%; background-color:#f8f9fa; padding:20px 30px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.08); margin-top:20px; }
+
+        h1, h2, h3, h4, h5 { color:#2c3e50; margin-top:0; }
+        h1#appTitle { font-size:2.0em; color:#2c3e50; text-align:center; width:100%; margin-bottom:20px; }
+        .main-section-title { font-size:1.6em; color:#1a5276; margin-top:30px; margin-bottom:15px; padding-bottom:10px; border-bottom:2px solid #1a5276; }
+        .sub-section-title { font-size:1.2em; color:#2980b9; margin-top:20px; margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #bdc3c7; }
+
+        .controls { text-align:center; margin-top:20px; margin-bottom:20px; padding:20px 0; border-top:1px solid #dee2e6; }
+        .controls button { margin:8px; padding:12px 22px; font-size:0.95em; background-color:#5cb85c; color:white; border:none; border-radius:5px; cursor:pointer; transition:background-color 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+        .controls button:hover { background-color:#4cae4c; }
+        #btnBorrarDatos { background-color:#f0ad4e; }
+        #btnBorrarDatos:hover { background-color:#ec971f; }
+        #btnImprimirPDF { background-color:#007bff; }
+        #btnImprimirPDF:hover { background-color:#0056b3; }
+
+        .input-fieldset { border:1px solid #ced4da; border-radius:6px; padding:20px 25px 25px 25px; margin-bottom:30px; background-color:#fff; }
+        .input-fieldset legend { font-weight:bold; color:#495057; padding:0 10px; font-size:1.2em; margin-left:10px; }
+        .input-fieldset h3 { margin-top:20px; margin-bottom:12px; border-bottom:1px solid #e0e0e0; padding-bottom:6px; font-size:1.1em; color:#343a40; }
+
+        .input-section input[type="text"], .input-section input[type="number"], .input-section select,
+        .input-fieldset input[type="text"], .input-fieldset input[type="number"], .input-fieldset select,
+        .input-fieldset input[type="email"], .input-fieldset input[type="tel"], .input-fieldset textarea,
+        #poaContainer textarea { padding:8px 10px; box-sizing:border-box; border:1px solid #ced4da; border-radius:4px; width:100%; font-size:0.95em; font-family:Arial,sans-serif; color:#333; }
+        .input-fieldset textarea, #poaContainer textarea { min-height:50px; resize:vertical; overflow-y:hidden; }
+        .input-fieldset input:focus, .input-fieldset select:focus, .input-fieldset textarea:focus, #poaContainer textarea:focus { border-color:#80bdff; outline:0; box-shadow:0 0 0 0.2rem rgba(0,123,255,.25); }
+        input[readonly] { background-color:#e9ecef; cursor:not-allowed; }
+
+        .form-grid { display:grid; grid-template-columns:max-content 1fr; gap:12px 18px; margin-bottom:15px; align-items:center; }
+        .input-fieldset label.inline-checkbox-label { display:flex; align-items:center; font-weight:normal; margin-top:5px; }
+        .input-fieldset input[type="checkbox"] { margin-right:8px; width:auto; }
+        .input-fieldset label { font-weight:normal; text-align:left; padding-right:5px; font-size:0.95em; color:#495057; }
+        .textarea-placeholder-style { color:#555; }
+        .textarea-print-content { display:none; }
+
+        /* SELECTOR TIPO PLAN */
+        #planTypeSelectorBox { background:#fff; border:1px solid #ced4da; border-radius:8px; padding:16px 20px; margin-bottom:8px; display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
+        #planTypeSelectorBox label { font-weight:bold; color:#495057; font-size:1em; white-space:nowrap; }
+        #selectTipoPlan { padding:9px 14px; border:1px solid #ced4da; border-radius:5px; font-size:0.98em; background:#fff; color:#333; cursor:pointer; min-width:320px; flex-grow:1; }
+        #selectTipoPlan:focus { outline:none; border-color:#80bdff; box-shadow:0 0 0 0.2rem rgba(0,123,255,.25); }
+        #planTypeBadge { display:none; }
+        /* Subtítulo del tipo de plan debajo del título */
+        #appTitleSubtitle { text-align:center; font-size:1.55em; color:#1a5276; font-weight:bold; margin-top:-14px; margin-bottom:22px; letter-spacing:0.01em; min-height:1.6em; }
+
+        /* OTBN TABLE */
+        .otbn-table { width:100%; max-width:600px; border-collapse:collapse; margin-top:8px; }
+        .otbn-table thead tr { background-color:#f0f0f0; }
+        .otbn-table th { padding:8px 12px; border:1px solid #ddd; font-size:0.95em; color:#333; }
+        .otbn-table td { padding:8px 12px; border:1px solid #e8e8e8; vertical-align:middle; font-size:0.95em; }
+        .otbn-table tbody tr:nth-child(odd) { background-color:#fafafa; }
+        .otbn-table input[type="number"] { background-color:#e9ecef; border:1px solid #ced4da; border-radius:4px; padding:5px 10px; width:100%; font-size:0.95em; }
+
+        /* POA STYLES */
+        #poaContainer details { border:1px solid #bdc3c7; border-radius:6px; margin-bottom:15px; background-color:#fdfdfd; }
+        #poaContainer summary { font-weight:bold; font-size:1.3em; padding:15px; cursor:pointer; background-color:#ecf0f1; border-radius:5px 5px 0 0; color:#34495e; border-bottom:1px solid #bdc3c7; }
+        #poaContainer details[open] summary { background-color:#3498db; color:white; }
+        #poaContainer .poa-content { padding:20px; }
+        .poa-reuse-text-label { display:flex; align-items:center; font-style:italic; color:#2c3e50; background-color:#ecf0f1; padding:8px; border-radius:4px; margin-top:-5px; margin-bottom:10px; }
+        .poa-reuse-text-label input { margin-right:10px; }
+        .poa-gantt-table th, .poa-gantt-table td { text-align:center; }
+        .poa-gantt-table td:first-child { text-align:left; }
+        .poa-budget-table { font-size:0.9em; }
+        .poa-budget-table th, .poa-budget-table td { padding:6px 8px; font-size:0.9em; }
+        .poa-budget-table .area-cell { font-weight:bold; background-color:#f2f2f2; vertical-align:middle; text-align:center; }
+        .poa-budget-table .rubro-cell { text-align:left; padding-left:15px; }
+        .poa-budget-table .subtotal-row td { font-weight:bold; background-color:#e9ecef; }
+        .poa-budget-table .subtotal-row td:first-child { text-align:right; padding-right:10px; font-weight:bold; }
+        .poa-budget-table .total-row td { font-weight:bold; background-color:#d1e7dd; font-size:1.1em; }
+        .poa-budget-table .total-row td:first-child { text-align:right; padding-right:10px; }
+        .poa-budget-table input[type="text"] { text-align:right; }
+
+        /* POA MAP */
+        .poa-map-section { margin:12px 0 18px 0; border:1px solid #b8daff; border-radius:6px; overflow:hidden; background:#fff; }
+        .poa-map-header { background:#1a5276; color:white; padding:8px 14px; font-weight:bold; font-size:0.95em; }
+        .poa-map-controls { display:flex; flex-wrap:wrap; gap:10px; padding:10px 12px; background:#f8f9fa; border-bottom:1px solid #dee2e6; align-items:center; }
+        .poa-map-controls label { font-weight:bold; font-size:0.88em; color:#444; display:flex; flex-direction:column; gap:3px; }
+        .poa-map-controls input[type="file"] { font-size:0.82em; }
+        .poa-map-status { font-size:0.88em; padding:5px 10px; display:none; border-radius:4px; margin:5px 12px; }
+        .poa-map-leaflet { height:280px; width:100%; }
+        .btn-map-poa { background:#007bff; color:white; border:none; border-radius:4px; padding:6px 12px; cursor:pointer; font-size:0.85em; }
+        .btn-map-poa:hover { background:#0056b3; }
+        .poa-map-print-snapshot { display:none; }
+
+        /* TABLE STYLES */
+        table { width:100%; border-collapse:collapse; margin-top:15px; }
+        th, td { border:1px solid #dee2e6; padding:10px; text-align:left; vertical-align:middle; }
+        th { background-color:#f1f3f5; font-weight:600; text-align:center; font-size:0.9em; }
+        td { text-align:right; font-size:0.9em; }
+        td:first-child { text-align:left; }
+        .result-table-container { margin-top:15px; }
+
+        /* STATIC TEXT */
+        .static-text-section { background-color:#fff; padding:15px 20px; border-radius:6px; border:1px solid #e0e0e0; margin-bottom:20px; font-size:0.95em; line-height:1.5; }
+
+        /* ACTIVIDADES GENERALES COLAPSABLE */
+        #actividadesGeneralesSection details { border:1px solid #c3e6cb; border-radius:6px; margin-bottom:20px; background:#f0fff4; }
+        #actividadesGeneralesSection summary { font-weight:bold; font-size:1.1em; padding:12px 16px; cursor:pointer; background:#28a745; color:white; border-radius:5px 5px 0 0; }
+        #actividadesGeneralesSection details[open] summary { border-radius:5px 5px 0 0; }
+        #actividadesGeneralesSection .ag-content { padding:15px 20px; }
+
+        /* FIRMAS */
+        .firmas-section-print { margin-top:20px; padding-top:15px; border-top:1px solid #aaa; display:none; }
+
+        /* PRINT STYLES */
+        @media print {
+            #loginOverlay { display:none !important; }
+            #pdfPrintImageHeader { display:flex !important; justify-content:flex-start; width:100%; margin-bottom:8mm; }
+            #pdfPrintImageHeader img { max-width:500px; width:auto; height:auto; }
+            div#pdfPrintMainTitle { display:block !important; text-align:center !important; margin:0 0 3mm 0 !important; width:100%; }
+            div#pdfPrintMainTitle div { display:block !important; font-weight:bold !important; color:#1a5276 !important; text-transform:uppercase !important; line-height:1.6 !important; }
+            #printLine1 { font-size:15pt !important; }
+            #printLine2 { font-size:13pt !important; }
+            #printLine3 { font-size:12pt !important; }
+            span#printDateGlobal { display:block !important; text-align:center; font-size:8.5pt !important; margin-bottom:5mm !important; color:#000 !important; width:100%; }
+            #mainContainer { box-shadow:none; padding:0; border-radius:0; margin-top:0; max-width:100%; width:100% !important; }
+            h1#appTitle, #mainContainer > img, .controls, #planTypeSelectorBox, #actividadesGeneralesSection, #operatoriaAnioBox, #appTitleSubtitle { display:none !important; }
+            #poaSection .input-fieldset { display:block !important; }
+            .poa-details-wrapper { page-break-before:always; }
+            #poaContainer details { page-break-inside:avoid; border:1px solid #888 !important; }
+            #poaContainer details[open] { display:block !important; }
+            #poaContainer summary { display:none; }
+            .poa-content > .main-section-title { display:block !important; }
+            .poa-reuse-text-label { display:none !important; }
+            .poa-budget-table input[type="text"] { border:none !important; background-color:transparent !important; box-shadow:none !important; font-size:7.5pt !important; color:#000 !important; }
+            .poa-map-controls, .poa-map-status, .poa-map-leaflet { display:none !important; }
+            .poa-map-print-snapshot { display:block !important; width:100% !important; max-height:280px; object-fit:contain; border:1px solid #ccc; margin:4px 0; page-break-inside:avoid; }
+            .poa-map-section { border:1px solid #aaa !important; page-break-inside:avoid; margin-bottom:4mm; }
+            .poa-map-header { background:#1a5276 !important; color:white !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; padding:4px 10px !important; font-size:8.5pt !important; }
+            .poa-kml-plan, .poa-kml-poa, .poa-kml-cortafuegos, .btn-map-poa { display:none !important; }
+            .input-fieldset textarea, #poaContainer .auto-resize-textarea { display:none !important; }
+            .textarea-print-content { display:block !important; border:1px solid #ccc !important; background-color:#f9f9f9 !important; padding:1.5mm 2mm !important; font-size:8pt !important; font-family:Arial,sans-serif; line-height:1.4 !important; width:100% !important; min-height:20px; white-space:pre-wrap; word-wrap:break-word; page-break-inside:auto; text-align:justify; }
+            .firmas-section-print { display:block !important; visibility:visible !important; margin-top:10mm !important; padding-top:8mm !important; page-break-before:auto; border-top:1px solid #888 !important; page-break-inside:avoid; }
+            .firmas-section-print * { visibility:visible !important; }
+            .firmas-section-print table td { border:none !important; font-size:8pt !important; padding:4px !important; color:#000 !important; vertical-align:top; }
+            .firma-detalle { font-size:7.5pt !important; line-height:1.3; }
+            .input-fieldset { border:1px solid #aaa !important; padding:10px 15px; margin-bottom:3mm; page-break-inside:auto; }
+            .input-fieldset legend { font-size:10pt !important; }
+            .main-section-title, .sub-section-title { font-size:11pt !important; color:#000 !important; border-bottom:1px solid #555 !important; margin-top:4mm; margin-bottom:2mm; page-break-after:avoid; }
+            th, td { font-size:6.5pt; padding:2px; border:1px solid #555 !important; color:#000 !important; word-wrap:break-word; }
+            th { background-color:#e9ecef !important; }
+            table { page-break-inside:auto; }
+            tr { page-break-inside:avoid; page-break-after:auto; }
+            thead { display:table-header-group !important; }
+            #pdfPrintHeaderWrapperForRunningElement { margin-bottom:5mm; }
+            #datosPredioParaImprimir { position:running(propertyPageHeader); font-size:8pt; line-height:1.3; margin:0 !important; padding:0 !important; border-bottom:none !important; }
+            #datosPredioParaImprimir p { text-align:center; width:100%; margin:0; padding:0; font-size:7.5pt; color:#333; border-bottom:0.5px solid #ccc; padding-bottom:1.5mm; }
+            @page { size:A4 portrait; margin:25mm 15mm 20mm 15mm;
+                @top-center { content:element(propertyPageHeader); font-size:7.5pt; color:#333; padding-bottom:2mm; vertical-align:top; height:15mm; box-sizing:border-box; }
+                @bottom-center { content:"Dirección de Recursos Forestales - Perú 1120 C.P.: W3400CQF Corrientes bosquesnativos@corrientes.gob.ar  |  Hoja " counter(page) " de " counter(pages) "\A Desarrollador: Ing. Ftal. Walter Hugo Sanchez"; white-space:pre; font-size:7.5pt; color:#555; padding-top:3mm; border-top:0.5px solid #ddd; vertical-align:top; }
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div id="loginOverlay">
+        <div id="loginFormContainer">
+            <img src="membrete_provincia.png" alt="Logo Provincia" id="loginLogo">
+            <form id="loginForm">
+                <h2>PLANES OPERATIVOS ANUALES</h2>
+                <div class="input-group">
+                    <label for="inputUsername">Usuario</label>
+                    <input type="text" id="inputUsername" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="inputPassword">Contraseña</label>
+                    <input type="password" id="inputPassword" name="password" required>
+                </div>
+                <button type="submit" id="loginButton">Ingresar</button>
+                <div id="loginError"></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="mainAppContent">
+        <div id="pdfPrintImageHeader">
+            <img src="membrete_provincia.png" alt="Membrete Provincia" width="800" height="400">
+        </div>
+        <div id="pdfPrintMainTitle">
+            <div id="printLine1">PLANES OPERATIVOS ANUALES (POA)</div>
+            <div id="printLine2"></div>
+            <div id="printLine3"></div>
+            <span id="printSubtitle" style="display:none;"></span>
+        </div>
+        <span id="printDateGlobal"></span>
+        <div id="pdfPrintPageFooterStrings" style="display:none;">
+            <span id="pageFooterEstablecimiento"></span>
+            <span id="pageFooterPartida"></span>
+            <span id="pageFooterDepartamento"></span>
+        </div>
+
+        <div id="mainContainer">
+            <h1 id="appTitle">PLANES OPERATIVOS ANUALES (POA)</h1>
+            <div id="operatoriaAnioBox" style="text-align:center; margin:-6px 0 14px 0;">
+                <span style="font-size:1.25em; font-weight:bold; color:#1a5276; letter-spacing:0.03em;">OPERATORIA AÑO&nbsp;</span>
+                <input type="number" id="inputOperatoriaAnio" min="2000" max="2100" step="1" placeholder="Ej: 2025"
+                    style="font-size:1.2em; font-weight:bold; color:#1a5276; border:none; border-bottom:2px solid #1a5276; background:transparent; width:90px; text-align:center; outline:none; padding:2px 4px;"
+                    oninput="this.style.width=((this.value.length||4)+2)+'ch'">
+            </div>
+            <div id="appTitleSubtitle"></div>
+
+            <div id="pdfPrintHeaderWrapperForRunningElement" style="display:none;">
+                <div id="datosPredioParaImprimir"></div>
+            </div>
+
+            <!-- SELECTOR TIPO PLAN -->
+            <div id="planTypeSelectorBox">
+                <label for="selectTipoPlan">📋 Tipo de Plan de Manejo:</label>
+                <select id="selectTipoPlan">
+                    <option value="">-- Seleccione el tipo de plan --</option>
+                    <option value="MBGI">Manejo de Bosques con Ganadería Integrada (MBGI)</option>
+                    <option value="CONSERVACION">Plan de Conservación de Bosques Nativos</option>
+                </select>
+                <span id="planTypeBadge"></span>
+            </div>
+
+            <!-- 1. DATOS DEL TITULAR REGISTRAL -->
+            <div class="input-section">
+                <h2 class="main-section-title">1. DATOS DEL TITULAR REGISTRAL DEL INMUEBLE</h2>
+                <fieldset class="input-fieldset">
+                    <legend>Información del Titular Registral</legend>
+                    <div class="form-grid">
+                        <label for="inputTitular">Titular:</label>
+                        <input type="text" id="inputTitular">
+                        <label for="inputDNI">DNI / CUIT Titular:</label>
+                        <input type="text" id="inputDNI">
+                        <label for="inputTitularDomicilio">Domicilio Legal:</label>
+                        <input type="text" id="inputTitularDomicilio">
+                        <label for="inputTitularTelefono">Teléfono:</label>
+                        <input type="tel" id="inputTitularTelefono">
+                        <label for="inputTitularEmail">Email:</label>
+                        <input type="email" id="inputTitularEmail">
+                    </div>
+                </fieldset>
+
+                <!-- 2. TITULAR DEL PROYECTO -->
+                <h2 class="main-section-title">2. TITULAR DEL PROYECTO</h2>
+                <fieldset class="input-fieldset">
+                    <legend>Información del Titular del Proyecto</legend>
+                    <label class="inline-checkbox-label">
+                        <input type="checkbox" id="checkMismoTitularProyecto"> Mismo que Titular Registral
+                    </label>
+                    <div class="form-grid">
+                        <label for="inputTitularProyectoNombre">Nombre y Apellido / Razón Social:</label>
+                        <input type="text" id="inputTitularProyectoNombre">
+                        <label for="inputTitularProyectoCUIT">CUIT / CUIL:</label>
+                        <input type="text" id="inputTitularProyectoCUIT">
+                        <label for="inputTitularProyectoDomicilio">Domicilio Legal:</label>
+                        <input type="text" id="inputTitularProyectoDomicilio">
+                        <label for="inputTitularProyectoTelefono">Teléfono:</label>
+                        <input type="tel" id="inputTitularProyectoTelefono">
+                        <label for="inputTitularProyectoEmail">Email:</label>
+                        <input type="email" id="inputTitularProyectoEmail">
+                    </div>
+                </fieldset>
+
+                <!-- 3. REPRESENTANTE LEGAL -->
+                <h2 class="main-section-title">3. REPRESENTANTE LEGAL DEL PROYECTO (si corresponde)</h2>
+                <fieldset class="input-fieldset">
+                    <legend>Información del Representante Legal</legend>
+                    <label class="inline-checkbox-label">
+                        <input type="checkbox" id="checkRepLegalNoAplica"> No Aplica / Mismos datos que Titular del Proyecto
+                    </label>
+                    <div class="form-grid">
+                        <label for="inputRepLegalNombre">Nombre y Apellido:</label>
+                        <input type="text" id="inputRepLegalNombre">
+                        <label for="inputRepLegalDNI">DNI:</label>
+                        <input type="text" id="inputRepLegalDNI">
+                        <label for="inputRepLegalCargo">Cargo / Carácter:</label>
+                        <input type="text" id="inputRepLegalCargo">
+                        <label for="inputRepLegalDomicilio">Domicilio:</label>
+                        <input type="text" id="inputRepLegalDomicilio">
+                        <label for="inputRepLegalTelefono">Teléfono:</label>
+                        <input type="tel" id="inputRepLegalTelefono">
+                    </div>
+                </fieldset>
+
+                <!-- 4. RESPONSABLE TÉCNICO -->
+                <h2 class="main-section-title">4. RESPONSABLE TÉCNICO DEL PROYECTO</h2>
+                <fieldset class="input-fieldset">
+                    <legend>Datos del Técnico Responsable</legend>
+                    <div class="form-grid">
+                        <label for="inputTecnicoNombre">Nombre y Apellido:</label>
+                        <input type="text" id="inputTecnicoNombre">
+                        <label for="inputtítuloprofesional">Título Profesional:</label>
+                        <input type="text" id="títuloprofesional">
+                        <label for="inputTecnicoMatricula">Matrícula N°:</label>
+                        <input type="text" id="inputTecnicoMatricula">
+                        <label for="inputTecnicoDomicilio">Domicilio Profesional:</label>
+                        <input type="text" id="inputTecnicoDomicilio">
+                        <label for="inputTecnicoTelefono">Teléfono Profesional:</label>
+                        <input type="tel" id="inputTecnicoTelefono">
+                        <label for="inputTecnicoEmail">Email Profesional:</label>
+                        <input type="email" id="inputTecnicoEmail">
+                    </div>
+                </fieldset>
+
+                <!-- 5. DATOS DEL INMUEBLE -->
+                <h2 class="main-section-title">5. DATOS DEL INMUEBLE</h2>
+                <fieldset class="input-fieldset">
+                    <legend>Detalles del Inmueble</legend>
+                    <div class="form-grid">
+                        <label for="inputEstablecimiento">Nombre Establecimiento:</label>
+                        <input type="text" id="inputEstablecimiento">
+                        <label for="inputPartidaInmobiliaria">Partida Inmobiliaria:</label>
+                        <input type="text" id="inputPartidaInmobiliaria">
+                        <label for="selectLocalidad">Localidad:</label>
+                        <select id="selectLocalidad"></select>
+                        <label for="inputDepartamento">Departamento:</label>
+                        <input type="text" id="inputDepartamento" readonly>
+                        <label for="inputProvincia">Provincia:</label>
+                        <input type="text" id="inputProvincia" value="CORRIENTES" readonly>
+                    </div>
+                </fieldset>
+
+                <!-- 6. DATOS DEL ÁREA -->
+                <h2 class="main-section-title">6. CARACTERÍSTICAS DEL ÁREA DEL PROYECTO</h2>
+                <fieldset class="input-fieldset">
+                    <legend>Superficies Relevantes</legend>
+                    <div class="form-grid" style="max-width:600px;">
+                        <label for="inputSupPredio">Superficie Total del Predio (ha):</label>
+                        <input type="number" id="inputSupPredio" step="0.01" value="0">
+                        <label for="inputSupAreaProyecto" style="font-weight:bold;">Superficie del Área del Plan de Manejo (ha):</label>
+                        <input type="number" id="inputSupAreaProyecto" step="0.01" value="0">
+                    </div>
+                </fieldset>
+            </div>
+
+            <!-- 7. POAs -->
+            <div id="poaSection">
+                <h2 class="main-section-title">7. PLANES OPERATIVOS ANUALES (POA)</h2>
+                <fieldset class="input-fieldset">
+                    <legend>Configuración de POAs</legend>
+                    <div class="form-grid" style="grid-template-columns:max-content 1fr; max-width:400px;">
+                        <label for="inputNumPoas" style="font-weight:bold;">Cantidad de POAs a detallar:</label>
+                        <input type="number" id="inputNumPoas" min="0" max="10" step="1" value="0">
+                    </div>
+                    <p style="font-size:0.9em; color:#555; margin-top:-5px; margin-bottom:0;">
+                        Ingrese un número entre 1 y 10 para generar las secciones de cada Plan Operativo Anual.
+                    </p>
+                </fieldset>
+                <div id="poaContainer"></div>
+            </div>
+
+            <!-- DECLARACIÓN JURADA -->
+            <h2 class="main-section-title">8. DECLARACIÓN JURADA</h2>
+            <div class="static-text-section">
+                <p>El/los que subscribe/n, con poder suficiente para este acto, manifiesta/n en calidad de declaración jurada y asumiendo toda la responsabilidad civil, penal y administrativa por cualquier falsedad, omisión u ocultamiento que se verificare, que la información contenida en el presente formulario y en la documentación anexa es veraz y exacta y subsiste al tiempo de efectuarse esta presentación.</p>
+                <label class="inline-checkbox-label" style="margin-top:15px; font-weight:bold;">
+                    <input type="checkbox" id="checkAceptoDDJJ"> Acepto los términos de la declaración jurada.
+                </label>
+            </div>
+            <div class="firmas-section-print" id="firmas-section-ddjj"></div>
+
+            <div class="controls" style="border-bottom:none; border-top:1px solid #dee2e6;">
+                <button id="btnBorrarDatos">Borrar Datos Ingresados</button>
+                <button id="btnImprimirPDF">🖨️ Imprimir / Guardar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // ===== LOGIN =====
+        const USERS_DB = { 'walter': '123', 'usuario': '123', 'usuario_visor': 'vermapa123' };
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const mainAppContent = document.getElementById('mainAppContent');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('inputUsername').value.trim();
+            const password = document.getElementById('inputPassword').value;
+            if (USERS_DB.hasOwnProperty(username) && USERS_DB[username] === password) {
+                loginOverlay.style.display = 'none';
+                mainAppContent.style.display = 'flex';
+                setupStaticTextareas();
+            } else {
+                loginError.textContent = 'Usuario o contraseña incorrectos.';
+                loginError.style.display = 'block';
+                document.getElementById('inputPassword').value = '';
+            }
+        });
+
+        // ===== AUXILIARES =====
+        function autoResizeTextarea(el) {
+            setTimeout(() => { el.style.height = 'auto'; el.style.height = (el.scrollHeight + 2) + 'px'; }, 0);
+        }
+        function formatNumber(num, decimals = 2) {
+            if (isNaN(num) || num === null || num === undefined) return decimals === 0 ? '0' : '0,00';
+            const fixedNum = num.toFixed(decimals);
+            if (decimals === 0) return fixedNum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            let [intPart, decPart] = fixedNum.split('.');
+            intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return `${intPart},${decPart}`;
+        }
+
+        function setupStaticTextareas() {
+            document.querySelectorAll('.auto-resize-textarea').forEach(textarea => {
+                const placeholderText = textarea.value.trim();
+                textarea.setAttribute('data-placeholder', placeholderText);
+                if (!textarea.value.trim() || textarea.value.trim() === placeholderText) {
+                    textarea.classList.add('textarea-placeholder-style');
+                    textarea.value = placeholderText;
+                }
+                textarea.addEventListener('focus', () => {
+                    if (textarea.readOnly) return;
+                    if (textarea.value === placeholderText) { textarea.value = ''; textarea.classList.remove('textarea-placeholder-style'); }
+                });
+                textarea.addEventListener('blur', () => {
+                    if (textarea.readOnly) return;
+                    if (textarea.value.trim() === '') { textarea.value = placeholderText; textarea.classList.add('textarea-placeholder-style'); }
+                });
+                textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+                autoResizeTextarea(textarea);
+            });
+        }
+
+        function generateSignatureBlockHTML(suffix) {
+            return `
+                <div class="firmas-section-print" id="firmas-section-${suffix}" style="display:block;">
+                    <table style="width:100%; border:none; margin-top:10px; font-size:9pt;">
+                        <tr style="border:none;">
+                            <td style="width:48%; text-align:center; border:none; padding:20px 10px;">
+                                <span style="display:block; margin-bottom:30px;">_________________________</span>
+                                <strong>Firma Titular del Proyecto / Rep. Legal</strong><br>
+                                <span class="firma-detalle">Aclaración:</span> <span id="firmaPrintTitularProyecto-${suffix}" class="firma-detalle"></span><br>
+                                <span class="firma-detalle">DNI / CUIT:</span> <span id="firmaPrintTitularProyectoCUIT-${suffix}" class="firma-detalle"></span>
+                            </td>
+                            <td style="width:4%; border:none;"></td>
+                            <td style="width:48%; text-align:center; border:none; padding:20px 10px;">
+                                <span style="display:block; margin-bottom:30px;">_________________________</span>
+                                <strong>Firma Técnico Responsable</strong><br>
+                                <span class="firma-detalle">Aclaración:</span> <span id="firmaPrintTecnicoNombre-${suffix}" class="firma-detalle"></span><br>
+                                <span class="firma-detalle">Matrícula N°:</span> <span id="firmaPrintTecnicoMatricula-${suffix}" class="firma-detalle"></span>
+                            </td>
+                        </tr>
+                        <tr style="border:none;">
+                            <td colspan="3" style="text-align:center; border:none; padding-top:20px;">
+                                <strong class="firma-detalle">Establecimiento:</strong> <span id="firmaPrintEstablecimiento-${suffix}" class="firma-detalle"></span><br>
+                                <strong class="firma-detalle">Partida Inmobiliaria:</strong> <span id="firmaPrintPartidaInmobiliaria-${suffix}" class="firma-detalle"></span> -
+                                <strong class="firma-detalle">Departamento:</strong> <span id="firmaPrintDepartamento-${suffix}" class="firma-detalle"></span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>`;
+        }
+
+        // ===== SELECTOR TIPO PLAN =====
+        const selectTipoPlan = document.getElementById('selectTipoPlan');
+        const planTypeBadge = document.getElementById('planTypeBadge');
+        const appTitleSubtitle = document.getElementById('appTitleSubtitle');
+        const planLabels = {
+            'MBGI': 'Manejo de Bosques con Ganadería Integrada (MBGI)',
+            'CONSERVACION': 'Plan de Conservación de Bosques Nativos'
+        };
+        function updateSubtitleDisplay() {
+            const val = selectTipoPlan.value;
+            const anio = document.getElementById('inputOperatoriaAnio').value.trim();
+            const planLabel = (val && planLabels[val]) ? planLabels[val].toUpperCase() : '';
+            const anioLabel = anio ? ' — OPERATORIA AÑO ' + anio : '';
+            // En pantalla: solo muestra el tipo de plan
+            appTitleSubtitle.textContent = planLabel;
+            // En impresion: 3 lineas separadas
+            const line2 = document.getElementById('printLine2');
+            const line3 = document.getElementById('printLine3');
+            if (line2) line2.textContent = anio ? 'OPERATORIA AÑO ' + anio : '';
+            if (line3) line3.textContent = planLabel;
+            // Mantener printSubtitle oculto pero con valor por compatibilidad
+            document.getElementById('printSubtitle').textContent = planLabel + anioLabel;
+        }
+        selectTipoPlan.addEventListener('change', updateSubtitleDisplay);
+        document.getElementById('inputOperatoriaAnio').addEventListener('input', updateSubtitleDisplay);
+
+        // ===== LOCALIDADES =====
+        const locationData = { "ALVEAR": { dpto: "GENERAL ALVEAR" }, "BELLA VISTA": { dpto: "BELLA VISTA" }, "BERON DE ASTRADA": { dpto: "BERON DE ASTRADA" }, "CHAVARRIA": { dpto: "SAN ROQUE" }, "COLONIA CARLOS PELLEGRINI": { dpto: "SAN MARTIN" }, "COLONIA LIEBIGS": { dpto: "ITUZAINGO" }, "CONCEPCION": { dpto: "CONCEPCION" }, "CORRIENTES": { dpto: "CAPITAL" }, "CURUZU CUATIA": { dpto: "CURUZU CUATIA" }, "EL SOMBRERO": { dpto: "EMPEDRADO" }, "EMPEDRADO": { dpto: "EMPEDRADO" }, "ESQUINA": { dpto: "ESQUINA" }, "FELIPE YOFRE": { dpto: "MERCEDES" }, "GARRUCHOS": { dpto: "SANTO TOME" }, "GOBERNADOR AGR. VALENTIN VIRASORO": { dpto: "SANTO TOME" }, "GOBERNADOR JUAN E. MARTINEZ": { dpto: "LAVALLE" }, "GOYA": { dpto: "GOYA" }, "GUAVIRAVI": { dpto: "SAN MARTIN" }, "ITA IBATE": { dpto: "GENERAL PAZ" }, "ITATI": { dpto: "ITATI" }, "ITUZAINGO": { dpto: "ITUZAINGO" }, "LA CRUZ": { dpto: "SAN MARTIN" }, "LAGUNA BRAVA": { dpto: "CAPITAL" }, "LAVALLE": { dpto: "LAVALLE" }, "LORETO": { dpto: "SAN MIGUEL" }, "MARIANO I. LOZA": { dpto: "MERCEDES" }, "MBURUCUYA": { dpto: "MBURUCUYA" }, "MERCEDES": { dpto: "MERCEDES" }, "MOCORETA": { dpto: "MONTE CASEROS" }, "MONTE CASEROS": { dpto: "MONTE CASEROS" }, "NUESTRA SENORA DEL ROSARIO DE CAA CATI": { dpto: "GENERAL PAZ" }, "9 DE JULIO": { dpto: "SAN ROQUE" }, "PASO DE LA PATRIA": { dpto: "SAN COSME" }, "PASO DE LOS LIBRES": { dpto: "PASO DE LOS LIBRES" }, "PEDRO R. FERNANDEZ": { dpto: "SAN ROQUE" }, "PERUGORRIA": { dpto: "CURUZU CUATIA" }, "SALADAS": { dpto: "SALADAS" }, "SAN ANTONIO": { dpto: "ITUZAINGO" }, "SAN CARLOS": { dpto: "ITUZAINGO" }, "SAN COSME": { dpto: "SAN COSME" }, "SAN LORENZO": { dpto: "SALADAS" }, "SAN LUIS DEL PALMAR": { dpto: "SAN LUIS DEL PALMAR" }, "SAN MIGUEL": { dpto: "SAN MIGUEL" }, "SAN ROQUE": { dpto: "SAN ROQUE" }, "SANTA ANA": { dpto: "SAN COSME" }, "SANTA LUCIA": { dpto: "LAVALLE" }, "SANTA ROSA": { dpto: "CONCEPCION" }, "SANTO TOME": { dpto: "SANTO TOME" }, "SAUCE": { dpto: "SAUCE" }, "VILLA OLIVARI": { dpto: "ITUZAINGO" }, "YAPEYU": { dpto: "SAN MARTIN" } };
+
+        function populateLocationDropdown() {
+            const select = document.getElementById('selectLocalidad');
+            const locations = Object.keys(locationData).sort();
+            select.innerHTML = '<option value="">Seleccione una localidad</option>';
+            locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc; option.textContent = loc;
+                select.appendChild(option);
+            });
+            select.addEventListener('change', () => {
+                const sel = select.value;
+                document.getElementById('inputDepartamento').value = (sel && locationData[sel]) ? locationData[sel].dpto : '';
+            });
+        }
+        populateLocationDropdown();
+
+        // ===== CHECKBOXES TITULAR / REP. LEGAL =====
+        document.getElementById('checkMismoTitularProyecto').addEventListener('change', (e) => {
+            const fields = [
+                { from: 'inputTitular', to: 'inputTitularProyectoNombre' },
+                { from: 'inputDNI', to: 'inputTitularProyectoCUIT' },
+                { from: 'inputTitularDomicilio', to: 'inputTitularProyectoDomicilio' },
+                { from: 'inputTitularTelefono', to: 'inputTitularProyectoTelefono' },
+                { from: 'inputTitularEmail', to: 'inputTitularProyectoEmail' }
+            ];
+            fields.forEach(f => {
+                const toEl = document.getElementById(f.to);
+                toEl.value = e.target.checked ? document.getElementById(f.from).value : '';
+                toEl.readOnly = e.target.checked;
+            });
+        });
+        document.getElementById('checkRepLegalNoAplica').addEventListener('change', (e) => {
+            ['inputRepLegalNombre','inputRepLegalDNI','inputRepLegalCargo','inputRepLegalDomicilio','inputRepLegalTelefono'].forEach(id => {
+                const el = document.getElementById(id);
+                el.value = ''; el.disabled = e.target.checked;
+            });
+        });
+
+        // ===== POAs DINÁMICOS =====
+        const poaContainer = document.getElementById('poaContainer');
+        const inputNumPoas = document.getElementById('inputNumPoas');
+        const poaMapsInstances = {};
+
+        const poaActivityConfig = [
+            { id: 'Tecnicas', title: '1- DESCRIPCIÓN Y JUSTIFICACIÓN DE LAS TÉCNICAS A IMPLEMENTAR Y DEL EQUIPAMIENTO UTILIZADO.' },
+            { id: 'ProteccionAmbiental', title: '2- PRESCRIPCIÓN DE TÉCNICAS Y MEDIDAS DE PROTECCIÓN AMBIENTAL.' },
+            { id: 'Monitoreo', title: '3- MEDIDAS PARA EL MONITOREO DEL CRECIMIENTO Y DINÁMICA DEL BOSQUE.' },
+            { id: 'PrevencionImpactos', title: '4- MEDIDAS DE PREVENCIÓN Y MITIGACIÓN DE IMPACTOS AMBIENTALES.' },
+            { id: 'Residuos', title: '5- DESCRIPCIÓN DEL TRATAMIENTO DE RESIDUOS.' },
+            { id: 'PrevencionFuego', title: '6- MEDIDAS DE PREVENCIÓN Y MITIGACIÓN DE INCENDIOS.' }
+        ];
+
+        function generatePoaSections() {
+            const numPoas = parseInt(inputNumPoas.value, 10) || 0;
+            Object.keys(poaMapsInstances).forEach(id => {
+                try {
+                    if (poaMapsInstances[id].resizeObserver) poaMapsInstances[id].resizeObserver.disconnect();
+                    poaMapsInstances[id].map.remove();
+                } catch(e) {}
+                delete poaMapsInstances[id];
+            });
+            poaContainer.innerHTML = '';
+            if (numPoas === 0) return;
+
+            for (let i = 1; i <= numPoas; i++) {
+                let activitiesHtml = '';
+                poaActivityConfig.forEach(config => {
+                    const poaTextareaId = `poaText${config.id}_${i}`;
+                    activitiesHtml += `
+                        <h3 class="sub-section-title">${config.title}</h3>
+                        <textarea id="${poaTextareaId}" class="auto-resize-textarea" placeholder="Describa aquí las actividades..."></textarea>
+                        <div id="print-${poaTextareaId}" class="textarea-print-content"></div>
+                    `;
+                });
+
+                const intervencionesRubros = ['Acondicionamiento y remoción de residuos','Control de especies invasoras, plagas y enfermedades','Cosecha forestal','Enriquecimiento','Implantación de pasturas nativas','Manejo de fauna autóctona','Manejo de ganado','Manejo de rebrote','Manejo del sotobosque','Poda comercial','Poda de saneamiento','Prevención de incendios','Productos Forestales No Madereros','Promoción de la regeneración natural','Control de procesos erosivos','Raleo comercial','Raleo de saneamiento','Restauración','Servicios de los bosques nativos','Vigilancia y control'];
+                const obtencionRubros = ['Elaboración de informes','Elaboración de SIG','Inventario Forestal','Monitoreo de indicadores ambientales','Procesamiento y análisis de datos','Recopilación de información','Relevamiento de base','Relevamiento de la biodiversidad','Zonificación y elaboración de cartografía'];
+                const infraestructuraRubros = ['Accesos','Cerramientos','Edificaciones','Manejo de agua'];
+                const extensionRubros = ['Capacitación','Difusión','Participación'];
+                const comprasRubros = ['Bienes de uso y de capital','Gastos operativos','Recursos humanos'];
+
+                let budgetTableHTML = `<table class="poa-budget-table" id="budgetTable_${i}"><thead><tr><th style="width:20%;">Área</th><th>Rubro</th><th style="width:25%;">Total ($)</th></tr></thead><tbody>`;
+                const buildCatRows = (rubros, catKey, catLabel) => {
+                    let html = `<tr><td rowspan="${rubros.length}" class="area-cell">${catLabel}</td><td class="rubro-cell">${rubros[0]}</td><td><input type="text" placeholder="-" class="poa-budget-item" data-category="${catKey}" data-poa-id="${i}"></td></tr>`;
+                    for(let r=1; r<rubros.length; r++) html += `<tr><td class="rubro-cell">${rubros[r]}</td><td><input type="text" placeholder="-" class="poa-budget-item" data-category="${catKey}" data-poa-id="${i}"></td></tr>`;
+                    const cap = catKey.charAt(0).toUpperCase() + catKey.slice(1);
+                    html += `<tr class="subtotal-row"><td colspan="2">Subtotal ${catLabel}</td><td>$ <span id="subtotal${cap}_${i}">0,00</span></td></tr>`;
+                    return html;
+                };
+                budgetTableHTML += buildCatRows(intervencionesRubros, 'intervenciones', 'Intervenciones sobre el bosque nativo');
+                budgetTableHTML += buildCatRows(obtencionRubros, 'obtencion', 'Obtención y análisis de datos');
+                budgetTableHTML += buildCatRows(infraestructuraRubros, 'infraestructura', 'Infraestructura');
+                budgetTableHTML += buildCatRows(extensionRubros, 'extension', 'Extensión');
+                budgetTableHTML += buildCatRows(comprasRubros, 'compras', 'Compras y Contrataciones');
+                budgetTableHTML += `<tr class="total-row"><td colspan="2">PRESUPUESTO POA ${i}</td><td>$ <span id="totalPoa_${i}">0,00</span></td></tr></tbody></table>`;
+
+                const poaHtml = `
+                    <div class="poa-details-wrapper">
+                        <details open>
+                            <summary id="poaSummary_${i}">PLAN OPERATIVO ANUAL (POA) N°&nbsp;<span id="poaNumDisplay_${i}">___</span></summary>
+                            <div class="poa-content">
+                                <h2 class="main-section-title" style="text-align:center; display:none;">PLAN OPERATIVO ANUAL (POA) N°&nbsp;<span id="poaNumDisplayPrint_${i}">___</span></h2>
+                                <fieldset class="input-fieldset">
+                                    <legend>Datos Generales del POA</legend>
+                                    <div class="form-grid" style="grid-template-columns:max-content 1fr; max-width:400px; margin-bottom:10px;">
+                                        <label for="inputPoaNumero_${i}" style="font-weight:bold;">N° de POA:</label>
+                                        <input type="text" id="inputPoaNumero_${i}" class="poa-numero-input" data-poa-seq="${i}" placeholder="Ingrese el N° de POA" style="font-weight:bold; font-size:1.05em;">
+                                    </div>
+                                    <div class="form-grid" style="grid-template-columns:max-content 1fr; max-width:400px;">
+                                        <label for="inputPoaArea_${i}">Superficie del POA (ha):</label>
+                                        <input type="number" id="inputPoaArea_${i}" class="poa-area-input" step="0.01" value="0">
+                                    </div>
+
+                                    <!-- Tabla OTBN del POA -->
+                                    <h3 class="sub-section-title" style="margin-top:18px; margin-bottom:8px;">Superficies de Cobertura Boscosa por Categoría OTBN a intervenir en este POA (ha)</h3>
+                                    <table class="otbn-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align:left;">Categoría</th>
+                                                <th style="text-align:right; width:200px;">Superficie POA (ha)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style="color:#c0392b; font-weight:bold;">Cat. I - Rojo:</td>
+                                                <td><input type="number" id="inputOTBN_CatI_${i}" step="0.01" placeholder="0,00" style="text-align:right;"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color:#d4ac0d; font-weight:bold;">Cat. II - Amarillo:</td>
+                                                <td><input type="number" id="inputOTBN_CatII_${i}" step="0.01" placeholder="0,00" style="text-align:right;"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color:#27ae60; font-weight:bold;">Cat. III - Verde:</td>
+                                                <td><input type="number" id="inputOTBN_CatIII_${i}" step="0.01" placeholder="0,00" style="text-align:right;"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color:#555;">Sin Categorizar:</td>
+                                                <td><input type="number" id="inputOTBN_SinCat_${i}" step="0.01" placeholder="0" style="text-align:right;"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div class="poa-map-section">
+                                        <div class="poa-map-header" id="poaMapHeader_${i}">🗺️ Mapa de Localización del POA N° <span id="poaMapNumDisplay_${i}">___</span></div>
+                                        <div class="poa-map-controls">
+                                            <label title="Cargar KML del área del Plan Técnico">
+                                                📋 KML Plan Técnico:
+                                                <input type="file" accept=".kml" class="poa-kml-plan" data-poa="${i}">
+                                            </label>
+                                            <label title="Cargar KML específico del área del POA ${i}">
+                                                📌 KML Área POA ${i}:
+                                                <input type="file" accept=".kml" class="poa-kml-poa" data-poa="${i}">
+                                            </label>
+                                            <label title="Cargar KML de calles cortafuegos">
+                                                🔥 KML Cortafuegos:
+                                                <input type="file" accept=".kml" class="poa-kml-cortafuegos" data-poa="${i}">
+                                            </label>
+                                            <button class="btn-map-poa poa-map-fit-btn" data-poa="${i}">⤢ Ajustar Vista</button>
+                                            <button class="btn-map-poa poa-map-clear-btn" data-poa="${i}" style="background:#dc3545;">✕ Limpiar</button>
+                                        </div>
+                                        <div id="poa-map-status-${i}" class="poa-map-status"></div>
+                                        <div id="poa-map-${i}" class="poa-map-leaflet"></div>
+                                    </div>
+                                </fieldset>
+                                ${activitiesHtml}
+                                <h3 class="sub-section-title">7- CRONOGRAMA DE ACTIVIDADES DEL POA ${i}</h3>
+                                <div class="result-table-container">
+                                    <table class="poa-gantt-table" id="ganttTable_${i}">
+                                        <thead>
+                                            <tr>
+                                                <th rowspan="2" style="vertical-align:middle;">Actividades</th>
+                                                <th colspan="12">Mes</th>
+                                            </tr>
+                                            <tr>
+                                                <th>Ene</th><th>Feb</th><th>Mar</th><th>Abr</th><th>May</th><th>Jun</th>
+                                                <th>Jul</th><th>Ago</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dic</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${['Intervenciones sobre el bosque nativo','Obtención y análisis de datos','Infraestructura','Extensión','Compras y Contrataciones'].map(act => `<tr><td>${act}</td>${'<td><input type="checkbox"></td>'.repeat(12)}</tr>`).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <h3 class="sub-section-title">8- PRESUPUESTO DEL POA ${i}</h3>
+                                <div class="result-table-container">${budgetTableHTML}</div>
+                                ${generateSignatureBlockHTML('poa' + i)}
+                            </div>
+                        </details>
+                    </div>
+                `;
+                poaContainer.insertAdjacentHTML('beforeend', poaHtml);
+            }
+            rebindPoaEventListeners();
+        }
+
+        function calculatePoaBudget(poaId) {
+            const categories = { intervenciones: 0, obtencion: 0, infraestructura: 0, extension: 0, compras: 0 };
+            for (const cat in categories) {
+                let subtotal = 0;
+                document.querySelectorAll(`.poa-budget-item[data-category="${cat}"][data-poa-id="${poaId}"]`).forEach(input => {
+                    subtotal += parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+                });
+                categories[cat] = subtotal;
+                const cap = cat.charAt(0).toUpperCase() + cat.slice(1);
+                const el = document.getElementById(`subtotal${cap}_${poaId}`);
+                if (el) el.textContent = formatNumber(subtotal);
+            }
+            const totalPoa = Object.values(categories).reduce((sum, v) => sum + v, 0);
+            const totalEl = document.getElementById(`totalPoa_${poaId}`);
+            if (totalEl) totalEl.textContent = formatNumber(totalPoa);
+        }
+
+        function rebindPoaEventListeners() {
+            document.querySelectorAll('#poaContainer .auto-resize-textarea').forEach(textarea => {
+                const ph = "Haga clic aquí para escribir texto...";
+                textarea.setAttribute('data-placeholder', ph);
+                textarea.addEventListener('focus', () => {
+                    if (textarea.readOnly) return;
+                    if (textarea.value === ph) { textarea.value = ''; textarea.classList.remove('textarea-placeholder-style'); }
+                });
+                textarea.addEventListener('blur', () => {
+                    if (textarea.readOnly) return;
+                    if (textarea.value.trim() === '') { textarea.value = ph; textarea.classList.add('textarea-placeholder-style'); }
+                });
+                textarea.addEventListener('input', () => autoResizeTextarea(textarea));
+            });
+            document.querySelectorAll('.poa-numero-input').forEach(input => {
+                const seq = input.dataset.poaSeq;
+                input.addEventListener('input', () => {
+                    const val = input.value.trim() || '___';
+                    const display = document.getElementById('poaNumDisplay_' + seq);
+                    const displayPrint = document.getElementById('poaNumDisplayPrint_' + seq);
+                    const mapNum = document.getElementById('poaMapNumDisplay_' + seq);
+                    if (display) display.textContent = val;
+                    if (displayPrint) displayPrint.textContent = val;
+                    if (mapNum) mapNum.textContent = val;
+                });
+            });
+            document.querySelectorAll('.poa-area-input').forEach(input => {
+                input.addEventListener('input', validatePoaAreas);
+            });
+            document.querySelectorAll('.poa-budget-item').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/[^0-9,.]/g, '');
+                    calculatePoaBudget(input.dataset.poaId);
+                });
+                input.addEventListener('blur', (e) => {
+                    const v = parseFloat(e.target.value.replace(/\./g, '').replace(',', '.')) || 0;
+                    e.target.value = v > 0 ? formatNumber(v) : '';
+                    if (!e.target.value || e.target.value === '0,00') e.target.placeholder = '-';
+                });
+                input.addEventListener('focus', (e) => {
+                    const v = parseFloat(e.target.value.replace(/\./g, '').replace(',', '.')) || 0;
+                    e.target.value = v > 0 ? v.toString().replace('.', ',') : '';
+                });
+            });
+            initPoaMaps();
+        }
+
+        function initPoaMaps() {
+            document.querySelectorAll('.poa-map-leaflet').forEach(mapDiv => {
+                const poaId = mapDiv.id.replace('poa-map-', '');
+                if (poaMapsInstances[poaId]) return;
+                const poaMap = L.map(mapDiv.id, { zoomControl: true }).setView([-28.5, -57.5], 8);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles © Esri', crossOrigin: 'anonymous'
+                }).addTo(poaMap);
+                L.control.scale({ imperial: false, metric: true }).addTo(poaMap);
+                poaMapsInstances[poaId] = { map: poaMap, layers: { plan: null, poa: null, cortafuegos: null }, legend: null };
+
+                const stylePlan = { color: '#06f1f1', weight: 2, opacity: 0.9, fillOpacity: 0.15 };
+                const stylePoa = { color: '#ff6600', weight: 3, opacity: 1, fillOpacity: 0.25 };
+                const styleCortafuegos = { color: '#e8151e', weight: 2.5, opacity: 0.9, fillOpacity: 0.15 };
+
+                function buildLegend() {
+                    const inst = poaMapsInstances[poaId];
+                    if (inst.legend) { inst.map.removeControl(inst.legend); inst.legend = null; }
+                    const items = [];
+                    if (inst.layers.plan) items.push({ color: '#06f1f1', label: 'Plan Técnico' });
+                    if (inst.layers.poa) items.push({ color: '#ff6600', label: `Área POA ${poaId}` });
+                    if (inst.layers.cortafuegos) items.push({ color: '#e8151e', label: 'Calles Cortafuegos' });
+                    if (items.length === 0) return;
+                    const legend = L.control({ position: 'bottomleft' });
+                    legend.onAdd = function() {
+                        const div = L.DomUtil.create('div');
+                        div.style.cssText = 'background:rgba(255,255,255,0.92);padding:6px 10px;border-radius:5px;font-size:11px;line-height:1.6;box-shadow:0 1px 4px rgba(0,0,0,0.3);pointer-events:none;';
+                        div.innerHTML = '<strong>Referencias</strong><br>' + items.map(it => `<span style="display:inline-block;width:14px;height:14px;background:${it.color};opacity:0.85;border:1px solid ${it.color};vertical-align:middle;margin-right:5px;border-radius:2px;"></span>${it.label}`).join('<br>');
+                        return div;
+                    };
+                    legend.addTo(inst.map);
+                    inst.legend = legend;
+                }
+
+                function showPoaStatus(msg, tipo) {
+                    const el = document.getElementById(`poa-map-status-${poaId}`);
+                    if (!el) return;
+                    el.textContent = msg; el.style.display = 'block';
+                    el.style.background = tipo==='ok'?'#d4edda':tipo==='err'?'#f8d7da':'#fff3cd';
+                    el.style.color = tipo==='ok'?'#155724':tipo==='err'?'#721c24':'#856404';
+                    setTimeout(() => { el.style.display = 'none'; }, 4000);
+                }
+
+                function fitPoaMap() {
+                    const inst = poaMapsInstances[poaId];
+                    const bounds = [];
+                    if (inst.layers.plan) bounds.push(inst.layers.plan.getBounds());
+                    if (inst.layers.poa) bounds.push(inst.layers.poa.getBounds());
+                    if (inst.layers.cortafuegos) bounds.push(inst.layers.cortafuegos.getBounds());
+                    if (bounds.length > 0) {
+                        let combined = bounds[0];
+                        bounds.forEach(b => { combined = combined.extend(b); });
+                        inst.map.fitBounds(combined, { paddingTopLeft: [20, 20], paddingBottomRight: [20, 20] });
+                    }
+                }
+
+                function loadPoaKML(file, layerKey, style, labelName) {
+                    if (!file) return;
+                    const inst = poaMapsInstances[poaId];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            if (inst.layers[layerKey]) inst.map.removeLayer(inst.layers[layerKey]);
+                            const geojson = omnivore.kml.parse(e.target.result).toGeoJSON();
+                            inst.layers[layerKey] = L.geoJSON(geojson, {
+                                style: style,
+                                onEachFeature: (feature, layer) => {
+                                    const name = (feature.properties && feature.properties.name) ? feature.properties.name : labelName;
+                                    layer.bindPopup(`<strong>${name}</strong>`);
+                                }
+                            }).addTo(inst.map);
+                            fitPoaMap(); buildLegend();
+                            showPoaStatus(`✅ Capa "${labelName}" cargada.`, 'ok');
+                        } catch(err) { showPoaStatus(`Error al cargar ${labelName}: ` + err.message, 'err'); }
+                    };
+                    reader.readAsText(file);
+                }
+
+                const kmlPlanInput = document.querySelector(`.poa-kml-plan[data-poa="${poaId}"]`);
+                const kmlPoaInput = document.querySelector(`.poa-kml-poa[data-poa="${poaId}"]`);
+                const kmlCortafuegosInput = document.querySelector(`.poa-kml-cortafuegos[data-poa="${poaId}"]`);
+                if (kmlPlanInput) kmlPlanInput.addEventListener('change', e => loadPoaKML(e.target.files[0], 'plan', stylePlan, 'Plan Técnico'));
+                if (kmlPoaInput) kmlPoaInput.addEventListener('change', e => loadPoaKML(e.target.files[0], 'poa', stylePoa, `Área POA ${poaId}`));
+                if (kmlCortafuegosInput) kmlCortafuegosInput.addEventListener('change', e => loadPoaKML(e.target.files[0], 'cortafuegos', styleCortafuegos, 'Calles Cortafuegos'));
+
+                const fitBtn = document.querySelector(`.poa-map-fit-btn[data-poa="${poaId}"]`);
+                if (fitBtn) fitBtn.addEventListener('click', fitPoaMap);
+                const clearBtn = document.querySelector(`.poa-map-clear-btn[data-poa="${poaId}"]`);
+                if (clearBtn) clearBtn.addEventListener('click', () => {
+                    const inst = poaMapsInstances[poaId];
+                    ['plan','poa','cortafuegos'].forEach(k => { if(inst.layers[k]) { inst.map.removeLayer(inst.layers[k]); inst.layers[k]=null; } });
+                    if(inst.legend) { inst.map.removeControl(inst.legend); inst.legend=null; }
+                    showPoaStatus('Capas borradas.', 'ok');
+                });
+
+                [100, 300, 600, 1200].forEach(delay => setTimeout(() => poaMap.invalidateSize(), delay));
+                if (typeof ResizeObserver !== 'undefined') {
+                    const ro = new ResizeObserver(entries => {
+                        for (const entry of entries) { if(entry.contentRect.width > 0 && entry.contentRect.height > 0) poaMap.invalidateSize(); }
+                    });
+                    ro.observe(mapDiv);
+                    poaMapsInstances[poaId].resizeObserver = ro;
+                }
+            });
+        }
+
+        function validatePoaAreas() {
+            const areaTotalPlan = parseFloat(document.getElementById('inputSupAreaProyecto').value) || 0;
+            let sumaAreasPoa = 0;
+            const poaAreaInputs = document.querySelectorAll('.poa-area-input');
+            poaAreaInputs.forEach(input => { sumaAreasPoa += parseFloat(input.value) || 0; input.style.border = ''; });
+            if (areaTotalPlan > 0 && sumaAreasPoa > (areaTotalPlan + 0.01)) {
+                alert(`¡Advertencia! La suma de las superficies de los POAs (${formatNumber(sumaAreasPoa)} ha) no debe exceder la Superficie del Área del Plan (${formatNumber(areaTotalPlan)} ha).`);
+                poaAreaInputs.forEach(input => { input.style.border = '2px solid orange'; });
+                return false;
+            }
+            return true;
+        }
+
+        inputNumPoas.addEventListener('change', generatePoaSections);
+
+        // ===== DDJJ =====
+        const checkDDJJ = document.getElementById('checkAceptoDDJJ');
+        const firmasDDJJ = document.getElementById('firmas-section-ddjj');
+        firmasDDJJ.style.display = 'none';
+        checkDDJJ.addEventListener('change', function() {
+            if (this.checked) {
+                firmasDDJJ.innerHTML = generateSignatureBlockHTML('ddjj');
+                firmasDDJJ.style.display = 'block';
+            } else {
+                firmasDDJJ.style.display = 'none';
+            }
+        });
+
+        // ===== IMPRIMIR =====
+        document.getElementById('btnImprimirPDF').addEventListener('click', prepararImpresion);
+
+        function prepararImpresion() {
+            if (!checkDDJJ.checked) { alert('Debe aceptar los términos de la Declaración Jurada antes de imprimir.'); return; }
+            if (!validatePoaAreas()) return;
+            if (!selectTipoPlan.value) { alert('Debe seleccionar el Tipo de Plan de Manejo antes de imprimir.'); return; }
+
+            const firmasDDJJEl = document.getElementById('firmas-section-ddjj');
+            if (firmasDDJJEl && !firmasDDJJEl.innerHTML.trim()) {
+                firmasDDJJEl.innerHTML = generateSignatureBlockHTML('ddjj');
+                firmasDDJJEl.style.display = 'block';
+            }
+
+            const numPoas = parseInt(inputNumPoas.value, 10) || 0;
+            const suffixes = ['ddjj', ...Array.from({length: numPoas}, (_, i) => `poa${i + 1}`)];
+            const checkRepLegalNoAplica = document.getElementById('checkRepLegalNoAplica').checked;
+
+            suffixes.forEach(suffix => {
+                const titularNameEl = document.getElementById(`firmaPrintTitularProyecto-${suffix}`);
+                const titularCuitEl = document.getElementById(`firmaPrintTitularProyectoCUIT-${suffix}`);
+                if (titularNameEl) titularNameEl.textContent = checkRepLegalNoAplica ? (document.getElementById('inputTitularProyectoNombre').value || "..............................") : (document.getElementById('inputRepLegalNombre').value || "..............................");
+                if (titularCuitEl) titularCuitEl.textContent = checkRepLegalNoAplica ? (document.getElementById('inputTitularProyectoCUIT').value || "..............................") : (document.getElementById('inputRepLegalDNI').value || "..............................");
+                const tecnicoNombreEl = document.getElementById(`firmaPrintTecnicoNombre-${suffix}`);
+                if (tecnicoNombreEl) tecnicoNombreEl.textContent = document.getElementById('inputTecnicoNombre').value || "..............................";
+                const tecnicoMatriculaEl = document.getElementById(`firmaPrintTecnicoMatricula-${suffix}`);
+                if (tecnicoMatriculaEl) tecnicoMatriculaEl.textContent = document.getElementById('inputTecnicoMatricula').value || "..............................";
+                const estEl = document.getElementById(`firmaPrintEstablecimiento-${suffix}`);
+                if (estEl) estEl.textContent = document.getElementById('inputEstablecimiento').value || "..............................";
+                const partEl = document.getElementById(`firmaPrintPartidaInmobiliaria-${suffix}`);
+                if (partEl) partEl.textContent = document.getElementById('inputPartidaInmobiliaria').value || "..............................";
+                const deptEl = document.getElementById(`firmaPrintDepartamento-${suffix}`);
+                if (deptEl) deptEl.textContent = document.getElementById('inputDepartamento').value || "..............................";
+            });
+
+            document.getElementById('pageFooterEstablecimiento').textContent = document.getElementById('inputEstablecimiento').value || " ";
+            document.getElementById('pageFooterPartida').textContent = document.getElementById('inputPartidaInmobiliaria').value || " ";
+            document.getElementById('pageFooterDepartamento').textContent = document.getElementById('inputDepartamento').value || " ";
+            // Actualizar las 3 lineas del titulo antes de imprimir
+            updateSubtitleDisplay();
+            const today = new Date();
+            document.getElementById('printDateGlobal').textContent = 'Fecha de emisión: ' + today.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+            document.getElementById('datosPredioParaImprimir').innerHTML = `<p><strong>Establecimiento:</strong> ${document.getElementById('inputEstablecimiento').value || "-"} | <strong>Partida:</strong> ${document.getElementById('inputPartidaInmobiliaria').value || "-"} | <strong>Departamento:</strong> ${document.getElementById('inputDepartamento').value || "-"}</p>`;
+
+            document.querySelectorAll('.auto-resize-textarea').forEach(textarea => {
+                const printDiv = document.getElementById('print-' + textarea.id);
+                if (printDiv) {
+                    const ph = textarea.getAttribute('data-placeholder');
+                    printDiv.textContent = (textarea.value.trim() === ph || textarea.value.trim() === '') ? '' : textarea.value;
+                }
+            });
+
+            alert("Se abrirá el diálogo de impresión. Para guardar como PDF, seleccione 'Guardar como PDF' o 'Microsoft Print to PDF' en el destino de la impresora.");
+
+            document.querySelectorAll('#poaContainer details').forEach(d => { d.open = true; });
+
+            const poaMapDivs = document.querySelectorAll('.poa-map-leaflet');
+            const snapshotPromises = Array.from(poaMapDivs).map(mapDiv => {
+                return new Promise(resolve => {
+                    if (typeof html2canvas === 'undefined') { resolve(); return; }
+                    const poaId = mapDiv.id.replace('poa-map-', '');
+                    const inst = poaMapsInstances[poaId];
+                    function doCapture() {
+                        html2canvas(mapDiv, { useCORS: true, allowTaint: true, scale: 1.5 }).then(canvas => {
+                            const img = document.createElement('img');
+                            img.src = canvas.toDataURL('image/png');
+                            img.className = 'poa-map-print-snapshot';
+                            img.style.width = '100%'; img.style.display = 'none';
+                            const prev = mapDiv.parentNode.querySelector('.poa-map-print-snapshot');
+                            if (prev) prev.remove();
+                            mapDiv.parentNode.insertBefore(img, mapDiv);
+                            resolve();
+                        }).catch(() => resolve());
+                    }
+                    if (inst) {
+                        inst.map.invalidateSize();
+                        const bounds = [];
+                        if (inst.layers.plan) bounds.push(inst.layers.plan.getBounds());
+                        if (inst.layers.poa) bounds.push(inst.layers.poa.getBounds());
+                        if (inst.layers.cortafuegos) bounds.push(inst.layers.cortafuegos.getBounds());
+                        if (bounds.length > 0) {
+                            let combined = bounds[0];
+                            bounds.forEach(b => { combined = combined.extend(b); });
+                            inst.map.fitBounds(combined, { paddingTopLeft: [20,20], paddingBottomRight: [20,20] });
+                        }
+                        setTimeout(doCapture, 1400);
+                    } else { doCapture(); }
+                });
+            });
+            Promise.all(snapshotPromises).then(() => {
+                window.print();
+                setTimeout(() => { document.querySelectorAll('.poa-map-print-snapshot').forEach(img => img.remove()); }, 2000);
+            });
+        }
+
+        // ===== BORRAR DATOS =====
+        document.getElementById('btnBorrarDatos').addEventListener('click', () => {
+            if (confirm('¿Está seguro que desea borrar TODOS los datos ingresados? Esta acción no se puede deshacer.')) {
+                document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="tel"], select, textarea').forEach(el => {
+                    if (el.readOnly || el.id === 'inputProvincia') return;
+                    if (el.type === 'checkbox') { el.checked = false; el.dispatchEvent(new Event('change')); }
+                    else if (el.tagName.toLowerCase() === 'textarea') { el.value = ''; }
+                    else if (el.id === 'selectTipoPlan') { el.value = ''; planTypeBadge.style.display = 'none'; document.getElementById('printSubtitle').textContent = ''; }
+                    else { el.value = el.type === 'number' ? '0' : ''; }
+                });
+                document.getElementById('inputProvincia').value = 'CORRIENTES';
+                document.getElementById('inputNumPoas').value = '0';
+                poaContainer.innerHTML = '';
+                setupStaticTextareas();
+                alert('Todos los datos han sido borrados.');
+            }
+        });
+
+    });
+    </script>
+</body>
+</html>
