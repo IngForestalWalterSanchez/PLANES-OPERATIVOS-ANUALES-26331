@@ -132,50 +132,210 @@
 
         /* PRINT STYLES */
         @media print {
+            * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+            body { background:#fff !important; margin:0 !important; padding:0 !important; font-family:'Arial', sans-serif; }
             #loginOverlay { display:none !important; }
-            #pdfPrintImageHeader { display:flex !important; justify-content:flex-start; width:100%; margin-bottom:8mm; }
-            #pdfPrintImageHeader img { max-width:500px; width:auto; height:auto; }
-            div#pdfPrintMainTitle { display:block !important; text-align:center !important; margin:0 0 3mm 0 !important; width:100%; }
-            div#pdfPrintMainTitle div { display:block !important; font-weight:bold !important; color:#1a5276 !important; text-transform:uppercase !important; line-height:1.6 !important; }
-            #printLine1 { font-size:15pt !important; }
-            #printLine2 { font-size:13pt !important; }
-            #printLine3 { font-size:12pt !important; }
-            span#printDateGlobal { display:block !important; text-align:center; font-size:8.5pt !important; margin-bottom:5mm !important; color:#000 !important; width:100%; }
-            #mainContainer { box-shadow:none; padding:0; border-radius:0; margin-top:0; max-width:100%; width:100% !important; }
+
+            /* ── ENCABEZADO DE IMPRESIÓN ── */
+            #pdfPrintImageHeader { display:flex !important; justify-content:flex-start; align-items:center; width:100%; margin-bottom:4mm; padding-bottom:3mm; border-bottom:2.5px solid #1a5276; }
+            #pdfPrintImageHeader img { max-width:480px; width:auto; height:auto; }
+            div#pdfPrintMainTitle { display:block !important; text-align:center !important; margin:0 0 1.5mm 0 !important; width:100%; }
+            div#pdfPrintMainTitle div { display:block !important; font-weight:bold !important; color:#1a5276 !important; text-transform:uppercase !important; line-height:1.5 !important; }
+            #printLine1 { font-size:14pt !important; letter-spacing:0.04em; }
+            #printLine2 { font-size:12pt !important; color:#1a5276 !important; }
+            #printLine3 { font-size:11pt !important; color:#2471a3 !important; }
+            span#printDateGlobal { display:block !important; text-align:center; font-size:8pt !important; margin-top:1.5mm; margin-bottom:4mm !important; color:#555 !important; width:100%; font-style:italic; }
+
+            /* ── CONTENEDOR PRINCIPAL ── */
+            #mainContainer { box-shadow:none !important; padding:0 !important; border-radius:0 !important; margin-top:0 !important; max-width:100% !important; width:100% !important; background:#fff !important; }
             h1#appTitle, #mainContainer > img, .controls, #planTypeSelectorBox, #actividadesGeneralesSection, #operatoriaAnioBox, #appTitleSubtitle { display:none !important; }
-            #poaSection .input-fieldset { display:block !important; }
-            .poa-details-wrapper { page-break-before:always; }
-            #poaContainer details { page-break-inside:avoid; border:1px solid #888 !important; }
-            #poaContainer details[open] { display:block !important; }
-            #poaContainer summary { display:none; }
+
+            /* ── TÍTULOS DE SECCIÓN ── */
+            .main-section-title {
+                font-size:10.5pt !important;
+                font-weight:bold !important;
+                color:#fff !important;
+                background-color:#1a5276 !important;
+                border:none !important;
+                border-radius:3px !important;
+                padding:3pt 8pt !important;
+                margin-top:5mm !important;
+                margin-bottom:2.5mm !important;
+                page-break-after:avoid !important;
+                text-transform:uppercase;
+                letter-spacing:0.03em;
+            }
+            .sub-section-title {
+                font-size:9pt !important;
+                font-weight:bold !important;
+                color:#1a5276 !important;
+                background:#eaf2f8 !important;
+                border-left:4px solid #1a5276 !important;
+                border-bottom:none !important;
+                border-top:none !important;
+                border-right:none !important;
+                padding:3pt 7pt !important;
+                margin-top:4mm !important;
+                margin-bottom:1.5mm !important;
+                page-break-after:avoid !important;
+            }
             .poa-content > .main-section-title { display:block !important; }
+
+            /* ── FIELDSETS ── */
+            .input-fieldset {
+                border:1.5px solid #1a5276 !important;
+                border-radius:4px !important;
+                padding:6pt 10pt 8pt 10pt !important;
+                margin-bottom:3mm !important;
+                page-break-inside:auto !important;
+                background:#fff !important;
+            }
+            .input-fieldset legend {
+                font-size:8.5pt !important;
+                font-weight:bold !important;
+                color:#1a5276 !important;
+                padding:0 5pt !important;
+                background:#fff !important;
+            }
+            #poaSection .input-fieldset { display:block !important; }
+
+            /* ── GRILLA DE FORMULARIO ── */
+            .form-grid {
+                display:grid !important;
+                grid-template-columns:max-content 1fr !important;
+                gap:3pt 10pt !important;
+                align-items:baseline !important;
+                margin-bottom:4pt !important;
+            }
+            .form-grid label {
+                font-size:8pt !important;
+                font-weight:bold !important;
+                color:#2c3e50 !important;
+                white-space:nowrap;
+            }
+            .form-grid input[type="text"], .form-grid input[type="number"],
+            .form-grid input[type="email"], .form-grid input[type="tel"],
+            .form-grid select {
+                border:none !important;
+                border-bottom:0.75px solid #888 !important;
+                background:transparent !important;
+                box-shadow:none !important;
+                font-size:8pt !important;
+                padding:1pt 2pt !important;
+                color:#000 !important;
+                min-height:auto !important;
+            }
+
+            /* ── POA WRAPPER ── */
+            .poa-details-wrapper { page-break-before:always !important; }
+            #poaContainer details { page-break-inside:avoid !important; border:1.5px solid #1a5276 !important; border-radius:4px !important; margin-bottom:4mm !important; }
+            #poaContainer details[open] { display:block !important; }
+            #poaContainer summary { display:none !important; }
+            .poa-content { padding:4mm 5mm !important; }
             .poa-reuse-text-label { display:none !important; }
-            .poa-budget-table input[type="text"] { border:none !important; background-color:transparent !important; box-shadow:none !important; font-size:7.5pt !important; color:#000 !important; }
-            .poa-map-controls, .poa-map-status, .poa-map-leaflet { display:none !important; }
-            .poa-map-print-snapshot { display:block !important; width:100% !important; max-height:280px; object-fit:contain; border:1px solid #ccc; margin:4px 0; page-break-inside:avoid; }
-            .poa-map-section { border:1px solid #aaa !important; page-break-inside:avoid; margin-bottom:4mm; }
-            .poa-map-header { background:#1a5276 !important; color:white !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; padding:4px 10px !important; font-size:8.5pt !important; }
-            .poa-kml-plan, .poa-kml-poa, .poa-kml-cortafuegos, .btn-map-poa { display:none !important; }
-            .input-fieldset textarea, #poaContainer .auto-resize-textarea { display:none !important; }
-            .textarea-print-content { display:block !important; border:1px solid #ccc !important; background-color:#f9f9f9 !important; padding:1.5mm 2mm !important; font-size:8pt !important; font-family:Arial,sans-serif; line-height:1.4 !important; width:100% !important; min-height:20px; white-space:pre-wrap; word-wrap:break-word; page-break-inside:auto; text-align:justify; }
-            .firmas-section-print { display:block !important; visibility:visible !important; margin-top:10mm !important; padding-top:8mm !important; page-break-before:auto; border-top:1px solid #888 !important; page-break-inside:avoid; }
-            .firmas-section-print * { visibility:visible !important; }
-            .firmas-section-print table td { border:none !important; font-size:8pt !important; padding:4px !important; color:#000 !important; vertical-align:top; }
-            .firma-detalle { font-size:7.5pt !important; line-height:1.3; }
-            .input-fieldset { border:1px solid #aaa !important; padding:10px 15px; margin-bottom:3mm; page-break-inside:auto; }
-            .input-fieldset legend { font-size:10pt !important; }
-            .main-section-title, .sub-section-title { font-size:11pt !important; color:#000 !important; border-bottom:1px solid #555 !important; margin-top:4mm; margin-bottom:2mm; page-break-after:avoid; }
-            th, td { font-size:6.5pt; padding:2px; border:1px solid #555 !important; color:#000 !important; word-wrap:break-word; }
-            th { background-color:#e9ecef !important; }
-            table { page-break-inside:auto; }
-            tr { page-break-inside:avoid; page-break-after:auto; }
+
+            /* ── TABLA OTBN ── */
+            .otbn-table { max-width:420px !important; }
+            .otbn-table th { background-color:#1a5276 !important; color:#fff !important; font-size:7.5pt !important; padding:3pt 6pt !important; }
+            .otbn-table td { font-size:7.5pt !important; padding:3pt 6pt !important; border:0.75px solid #bbb !important; }
+            .otbn-table tbody tr:nth-child(even) { background-color:#f2f8fd !important; }
+            .otbn-table input[type="number"] { border:none !important; background:transparent !important; font-size:7.5pt !important; }
+
+            /* ── TABLAS GENERALES ── */
+            table { page-break-inside:auto !important; border-collapse:collapse !important; width:100% !important; }
             thead { display:table-header-group !important; }
-            #pdfPrintHeaderWrapperForRunningElement { margin-bottom:5mm; }
-            #datosPredioParaImprimir { position:running(propertyPageHeader); font-size:8pt; line-height:1.3; margin:0 !important; padding:0 !important; border-bottom:none !important; }
-            #datosPredioParaImprimir p { text-align:center; width:100%; margin:0; padding:0; font-size:7.5pt; color:#333; border-bottom:0.5px solid #ccc; padding-bottom:1.5mm; }
-            @page { size:A4 portrait; margin:25mm 15mm 20mm 15mm;
-                @top-center { content:element(propertyPageHeader); font-size:7.5pt; color:#333; padding-bottom:2mm; vertical-align:top; height:15mm; box-sizing:border-box; }
-                @bottom-center { content:"Dirección de Recursos Forestales - Perú 1120 C.P.: W3400CQF Corrientes bosquesnativos@corrientes.gob.ar  |  Hoja " counter(page) " de " counter(pages) "\A Desarrollador: Ing. Ftal. Walter Hugo Sanchez"; white-space:pre; font-size:7.5pt; color:#555; padding-top:3mm; border-top:0.5px solid #ddd; vertical-align:top; }
+            tr { page-break-inside:avoid !important; page-break-after:auto !important; }
+            th {
+                background-color:#1a5276 !important;
+                color:#fff !important;
+                font-size:7pt !important;
+                padding:3pt 4pt !important;
+                border:0.75px solid #0e3452 !important;
+                text-align:center !important;
+            }
+            td { font-size:7pt !important; padding:2.5pt 4pt !important; border:0.75px solid #ccc !important; color:#000 !important; word-wrap:break-word !important; }
+            td:first-child { text-align:left !important; }
+
+            /* ── PRESUPUESTO ── */
+            .poa-budget-table input[type="text"] { border:none !important; background:transparent !important; box-shadow:none !important; font-size:7pt !important; color:#000 !important; text-align:right !important; }
+            .poa-budget-table .area-cell { background-color:#d6eaf8 !important; color:#1a5276 !important; font-weight:bold !important; font-size:7pt !important; }
+            .poa-budget-table .rubro-cell { font-size:7pt !important; padding-left:10pt !important; }
+            .poa-budget-table .subtotal-row td { background-color:#d6eaf8 !important; font-weight:bold !important; font-size:7pt !important; color:#1a5276 !important; }
+            .poa-budget-table .total-row td { background-color:#1a5276 !important; color:#fff !important; font-weight:bold !important; font-size:8pt !important; }
+            .poa-budget-table .total-row td:first-child { text-align:right !important; padding-right:8pt !important; }
+
+            /* ── GANTT ── */
+            .poa-gantt-table th, .poa-gantt-table td { text-align:center !important; font-size:6.5pt !important; padding:2.5pt !important; }
+            .poa-gantt-table td:first-child { text-align:left !important; font-size:7pt !important; font-weight:bold !important; }
+            .poa-gantt-table input[type="checkbox"] { width:9pt !important; height:9pt !important; }
+
+            /* ── MAPA ── */
+            .poa-map-controls, .poa-map-status, .poa-map-leaflet { display:none !important; }
+            .poa-map-print-snapshot { display:block !important; width:100% !important; max-height:260px !important; object-fit:contain !important; border:1px solid #bbb !important; margin:3pt 0 !important; page-break-inside:avoid !important; border-radius:3px; }
+            .poa-map-section { border:1.5px solid #1a5276 !important; border-radius:4px !important; page-break-inside:avoid !important; margin-bottom:3mm !important; overflow:hidden !important; }
+            .poa-map-header { background:#1a5276 !important; color:#fff !important; padding:4pt 10pt !important; font-size:8pt !important; font-weight:bold !important; letter-spacing:0.02em; }
+            .poa-kml-plan, .poa-kml-poa, .poa-kml-cortafuegos, .btn-map-poa { display:none !important; }
+
+            /* ── TEXTAREAS ── */
+            .input-fieldset textarea, #poaContainer .auto-resize-textarea { display:none !important; }
+            .textarea-print-content {
+                display:block !important;
+                border:0.75px solid #bbb !important;
+                border-left:3px solid #1a5276 !important;
+                background-color:#fafcfe !important;
+                padding:3pt 5pt !important;
+                font-size:8pt !important;
+                font-family:Arial,sans-serif !important;
+                line-height:1.45 !important;
+                width:100% !important;
+                min-height:18pt !important;
+                white-space:pre-wrap !important;
+                word-wrap:break-word !important;
+                page-break-inside:auto !important;
+                text-align:justify !important;
+                color:#000 !important;
+                border-radius:0 3px 3px 0 !important;
+                box-sizing:border-box !important;
+            }
+
+            /* ── DECLARACIÓN JURADA ── */
+            .static-text-section { border:1px solid #ccc !important; padding:5pt 8pt !important; font-size:8pt !important; line-height:1.5 !important; border-radius:3px; background:#fafafa !important; }
+            .inline-checkbox-label { font-size:8pt !important; }
+
+            /* ── FIRMAS ── */
+            .firmas-section-print {
+                display:block !important;
+                visibility:visible !important;
+                margin-top:8mm !important;
+                padding-top:6mm !important;
+                page-break-before:auto !important;
+                page-break-inside:avoid !important;
+                border-top:2px solid #1a5276 !important;
+            }
+            .firmas-section-print * { visibility:visible !important; }
+            .firmas-section-print table td { border:none !important; font-size:8pt !important; padding:3pt 5pt !important; color:#000 !important; vertical-align:top !important; }
+            .firma-detalle { font-size:7.5pt !important; line-height:1.35 !important; color:#333 !important; }
+
+            /* ── HEADER CORRIENTE DE PÁGINA ── */
+            #pdfPrintHeaderWrapperForRunningElement { margin-bottom:4mm; }
+            #datosPredioParaImprimir { position:running(propertyPageHeader); font-size:7.5pt; line-height:1.3; margin:0 !important; padding:0 !important; border-bottom:none !important; }
+            #datosPredioParaImprimir p { text-align:center; width:100%; margin:0; padding:0; font-size:7.5pt; color:#333; border-bottom:0.5px solid #aaa; padding-bottom:1.5mm; font-style:italic; }
+
+            /* ── PÁGINA ── */
+            @page {
+                size:A4 portrait;
+                margin:22mm 15mm 22mm 15mm;
+                @top-center {
+                    content:element(propertyPageHeader);
+                    font-size:7.5pt; color:#555; padding-bottom:2mm;
+                    vertical-align:bottom; height:12mm; box-sizing:border-box;
+                }
+                @bottom-center {
+                    content:"Dirección de Recursos Forestales - Perú 1120 C.P.: W3400CQF Corrientes  |  bosquesnativos@corrientes.gob.ar  |  Hoja " counter(page) " de " counter(pages) "\A Desarrollador: Ing. Ftal. Walter Hugo Sanchez";
+                    white-space:pre; font-size:7pt; color:#666;
+                    padding-top:2.5mm; border-top:0.75px solid #bbb;
+                    vertical-align:top;
+                }
             }
         }
     </style>
@@ -692,7 +852,6 @@
                                 </div>
                                 <h3 class="sub-section-title">8- PRESUPUESTO DEL POA ${i}</h3>
                                 <div class="result-table-container">${budgetTableHTML}</div>
-                                ${generateSignatureBlockHTML('poa' + i)}
                             </div>
                         </details>
                     </div>
@@ -811,14 +970,21 @@
 
                 function fitPoaMap() {
                     const inst = poaMapsInstances[poaId];
-                    const bounds = [];
-                    if (inst.layers.plan) bounds.push(inst.layers.plan.getBounds());
-                    if (inst.layers.poa) bounds.push(inst.layers.poa.getBounds());
-                    if (inst.layers.cortafuegos) bounds.push(inst.layers.cortafuegos.getBounds());
-                    if (bounds.length > 0) {
-                        let combined = bounds[0];
-                        bounds.forEach(b => { combined = combined.extend(b); });
-                        inst.map.fitBounds(combined, { paddingTopLeft: [20, 20], paddingBottomRight: [20, 20] });
+                    const allBounds = [];
+                    ['plan', 'poa', 'cortafuegos'].forEach(k => {
+                        if (inst.layers[k]) {
+                            try {
+                                const b = inst.layers[k].getBounds();
+                                if (b && b.isValid()) allBounds.push(b);
+                            } catch(e) {}
+                        }
+                    });
+                    if (allBounds.length > 0) {
+                        try {
+                            let combined = allBounds[0];
+                            allBounds.slice(1).forEach(b => { combined = combined.extend(b); });
+                            inst.map.fitBounds(combined, { paddingTopLeft: [20, 20], paddingBottomRight: [20, 20] });
+                        } catch(e) {}
                     }
                 }
 
@@ -828,19 +994,44 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         try {
-                            if (inst.layers[layerKey]) inst.map.removeLayer(inst.layers[layerKey]);
-                            const geojson = omnivore.kml.parse(e.target.result).toGeoJSON();
-                            inst.layers[layerKey] = L.geoJSON(geojson, {
-                                style: style,
-                                onEachFeature: (feature, layer) => {
+                            if (inst.layers[layerKey]) { inst.map.removeLayer(inst.layers[layerKey]); inst.layers[layerKey] = null; }
+
+                            // Usar capa personalizada para aplicar estilo correcto
+                            const customLayer = L.geoJSON(null, {
+                                style: function() { return style; },
+                                pointToLayer: function(feature, latlng) {
+                                    return L.circleMarker(latlng, {
+                                        radius: 6,
+                                        fillColor: style.color,
+                                        color: style.color,
+                                        weight: 2,
+                                        opacity: 1,
+                                        fillOpacity: 0.8
+                                    });
+                                },
+                                onEachFeature: function(feature, layer) {
                                     const name = (feature.properties && feature.properties.name) ? feature.properties.name : labelName;
-                                    layer.bindPopup(`<strong>${name}</strong>`);
+                                    layer.bindPopup('<strong>' + name + '</strong>');
                                 }
-                            }).addTo(inst.map);
-                            fitPoaMap(); buildLegend();
-                            showPoaStatus(`✅ Capa "${labelName}" cargada.`, 'ok');
-                        } catch(err) { showPoaStatus(`Error al cargar ${labelName}: ` + err.message, 'err'); }
+                            });
+
+                            omnivore.kml.parse(e.target.result, null, customLayer);
+                            inst.layers[layerKey] = customLayer;
+                            customLayer.addTo(inst.map);
+
+                            // Ajustar vista solo si la capa tiene geometrías válidas
+                            try {
+                                const bounds = customLayer.getBounds();
+                                if (bounds && bounds.isValid()) {
+                                    inst.map.fitBounds(bounds, { paddingTopLeft: [20, 20], paddingBottomRight: [20, 20] });
+                                }
+                            } catch(boundsErr) {}
+
+                            buildLegend();
+                            showPoaStatus('✅ Capa "' + labelName + '" cargada correctamente.', 'ok');
+                        } catch(err) { showPoaStatus('Error al cargar ' + labelName + ': ' + err.message, 'err'); }
                     };
+                    reader.onerror = function() { showPoaStatus('No se pudo leer el archivo KML.', 'err'); };
                     reader.readAsText(file);
                 }
 
@@ -915,7 +1106,7 @@
             }
 
             const numPoas = parseInt(inputNumPoas.value, 10) || 0;
-            const suffixes = ['ddjj', ...Array.from({length: numPoas}, (_, i) => `poa${i + 1}`)];
+            const suffixes = ['ddjj'];
             const checkRepLegalNoAplica = document.getElementById('checkRepLegalNoAplica').checked;
 
             suffixes.forEach(suffix => {
@@ -977,13 +1168,15 @@
                     if (inst) {
                         inst.map.invalidateSize();
                         const bounds = [];
-                        if (inst.layers.plan) bounds.push(inst.layers.plan.getBounds());
-                        if (inst.layers.poa) bounds.push(inst.layers.poa.getBounds());
-                        if (inst.layers.cortafuegos) bounds.push(inst.layers.cortafuegos.getBounds());
+                        if (inst.layers.plan) { try { const b = inst.layers.plan.getBounds(); if(b && b.isValid()) bounds.push(b); } catch(e) {} }
+                        if (inst.layers.poa) { try { const b = inst.layers.poa.getBounds(); if(b && b.isValid()) bounds.push(b); } catch(e) {} }
+                        if (inst.layers.cortafuegos) { try { const b = inst.layers.cortafuegos.getBounds(); if(b && b.isValid()) bounds.push(b); } catch(e) {} }
                         if (bounds.length > 0) {
-                            let combined = bounds[0];
-                            bounds.forEach(b => { combined = combined.extend(b); });
-                            inst.map.fitBounds(combined, { paddingTopLeft: [20,20], paddingBottomRight: [20,20] });
+                            try {
+                                let combined = bounds[0];
+                                bounds.forEach(b => { combined = combined.extend(b); });
+                                inst.map.fitBounds(combined, { paddingTopLeft: [20,20], paddingBottomRight: [20,20] });
+                            } catch(e) {}
                         }
                         setTimeout(doCapture, 1400);
                     } else { doCapture(); }
