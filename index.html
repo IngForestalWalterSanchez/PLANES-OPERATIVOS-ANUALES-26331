@@ -817,7 +817,7 @@
                                                 <input type="file" accept=".kml" class="poa-kml-plan" data-poa="${i}">
                                             </label>
                                             <label title="Cargar KML específico del área del POA ${i}">
-                                                📌 KML Área POA ${i}:
+                                                📌 KML Área POA <span id="poaKmlLabelNum_${i}">___</span>:
                                                 <input type="file" accept=".kml" class="poa-kml-poa" data-poa="${i}">
                                             </label>
                                             <label title="Cargar KML de calles cortafuegos">
@@ -899,10 +899,20 @@
                     const display = document.getElementById('poaNumDisplay_' + seq);
                     const displayPrint = document.getElementById('poaNumDisplayPrint_' + seq);
                     const mapNum = document.getElementById('poaMapNumDisplay_' + seq);
+                    const kmlLabel = document.getElementById('poaKmlLabelNum_' + seq);
                     if (display) display.textContent = val;
                     if (displayPrint) displayPrint.textContent = val;
                     if (mapNum) mapNum.textContent = val;
+                    if (kmlLabel) kmlLabel.textContent = val;
+                    // Actualizar la leyenda del mapa con el nuevo número
+                    if (poaMapsInstances[seq] && poaMapsInstances[seq].buildLegend) {
+                        poaMapsInstances[seq].buildLegend();
+                    }
                 });
+                // Inicializar el label con el valor actual si ya existe
+                const currentVal = input.value.trim() || '___';
+                const kmlLabelInit = document.getElementById('poaKmlLabelNum_' + seq);
+                if (kmlLabelInit) kmlLabelInit.textContent = currentVal;
             });
             document.querySelectorAll('.poa-area-input').forEach(input => {
                 input.addEventListener('input', validatePoaAreas);
@@ -945,7 +955,9 @@
                     if (inst.legend) { inst.map.removeControl(inst.legend); inst.legend = null; }
                     const items = [];
                     if (inst.layers.plan) items.push({ color: '#06f1f1', label: 'Plan Técnico' });
-                    if (inst.layers.poa) items.push({ color: '#ff6600', label: `Área POA ${poaId}` });
+                    const poaNumInput = document.getElementById('inputPoaNumero_' + poaId);
+                    const poaNumLabel = (poaNumInput && poaNumInput.value.trim()) ? poaNumInput.value.trim() : poaId;
+                    if (inst.layers.poa) items.push({ color: '#ff6600', label: `Área POA ${poaNumLabel}` });
                     if (inst.layers.cortafuegos) items.push({ color: '#e8151e', label: 'Calles Cortafuegos' });
                     if (items.length === 0) return;
                     const legend = L.control({ position: 'bottomleft' });
@@ -958,6 +970,8 @@
                     legend.addTo(inst.map);
                     inst.legend = legend;
                 }
+
+                poaMapsInstances[poaId].buildLegend = buildLegend;
 
                 function showPoaStatus(msg, tipo) {
                     const el = document.getElementById(`poa-map-status-${poaId}`);
@@ -1210,3 +1224,4 @@
     </script>
 </body>
 </html>
+
