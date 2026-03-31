@@ -761,7 +761,7 @@
                 budgetTableHTML += buildCatRows(infraestructuraRubros, 'infraestructura', 'Infraestructura');
                 budgetTableHTML += buildCatRows(extensionRubros, 'extension', 'Extensión');
                 budgetTableHTML += buildCatRows(comprasRubros, 'compras', 'Compras y Contrataciones');
-                budgetTableHTML += `<tr class="total-row"><td colspan="2">PRESUPUESTO POA ${i}</td><td>$ <span id="totalPoa_${i}">0,00</span></td></tr></tbody></table>`;
+                budgetTableHTML += `<tr class="total-row"><td colspan="2">PRESUPUESTO POA <span id="poaBudgetTotalNumDisplay_${i}">___</span></td><td>$ <span id="totalPoa_${i}">0,00</span></td></tr></tbody></table>`;
 
                 const poaHtml = `
                     <div class="poa-details-wrapper">
@@ -832,7 +832,7 @@
                                     </div>
                                 </fieldset>
                                 ${activitiesHtml}
-                                <h3 class="sub-section-title">7- CRONOGRAMA DE ACTIVIDADES DEL POA ${i}</h3>
+                                <h3 class="sub-section-title">7- CRONOGRAMA DE ACTIVIDADES DEL POA <span id="poaGanttNumDisplay_${i}">___</span></h3>
                                 <div class="result-table-container">
                                     <table class="poa-gantt-table" id="ganttTable_${i}">
                                         <thead>
@@ -850,7 +850,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <h3 class="sub-section-title">8- PRESUPUESTO DEL POA ${i}</h3>
+                                <h3 class="sub-section-title">8- PRESUPUESTO DEL POA <span id="poaBudgetNumDisplay_${i}">___</span></h3>
                                 <div class="result-table-container">${budgetTableHTML}</div>
                             </div>
                         </details>
@@ -900,19 +900,31 @@
                     const displayPrint = document.getElementById('poaNumDisplayPrint_' + seq);
                     const mapNum = document.getElementById('poaMapNumDisplay_' + seq);
                     const kmlLabel = document.getElementById('poaKmlLabelNum_' + seq);
+                    const ganttNum = document.getElementById('poaGanttNumDisplay_' + seq);
+                    const budgetNum = document.getElementById('poaBudgetNumDisplay_' + seq);
+                    const budgetTotalNum = document.getElementById('poaBudgetTotalNumDisplay_' + seq);
                     if (display) display.textContent = val;
                     if (displayPrint) displayPrint.textContent = val;
                     if (mapNum) mapNum.textContent = val;
                     if (kmlLabel) kmlLabel.textContent = val;
+                    if (ganttNum) ganttNum.textContent = val;
+                    if (budgetNum) budgetNum.textContent = val;
+                    if (budgetTotalNum) budgetTotalNum.textContent = val;
                     // Actualizar la leyenda del mapa con el nuevo número
                     if (poaMapsInstances[seq] && poaMapsInstances[seq].buildLegend) {
                         poaMapsInstances[seq].buildLegend();
                     }
                 });
-                // Inicializar el label con el valor actual si ya existe
+                // Inicializar todos los labels con el valor actual si ya existe
                 const currentVal = input.value.trim() || '___';
                 const kmlLabelInit = document.getElementById('poaKmlLabelNum_' + seq);
+                const ganttNumInit = document.getElementById('poaGanttNumDisplay_' + seq);
+                const budgetNumInit = document.getElementById('poaBudgetNumDisplay_' + seq);
+                const budgetTotalNumInit = document.getElementById('poaBudgetTotalNumDisplay_' + seq);
                 if (kmlLabelInit) kmlLabelInit.textContent = currentVal;
+                if (ganttNumInit) ganttNumInit.textContent = currentVal;
+                if (budgetNumInit) budgetNumInit.textContent = currentVal;
+                if (budgetTotalNumInit) budgetTotalNumInit.textContent = currentVal;
             });
             document.querySelectorAll('.poa-area-input').forEach(input => {
                 input.addEventListener('input', validatePoaAreas);
@@ -1224,4 +1236,6 @@
     </script>
 </body>
 </html>
+
+
 
